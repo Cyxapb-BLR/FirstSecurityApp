@@ -23,7 +23,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     //  config authorization
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.formLogin().loginPage("/auth/login")
+        http.authorizeRequests()
+                .antMatchers("/auth/login", "/error").permitAll()   // эти страницы доступны без аутентификации
+                .anyRequest().authenticated()   // для всех остальных страниц нужна аутентификация
+                .and()
+                .formLogin().loginPage("/auth/login")
                 .loginProcessingUrl("/process_login")
                 .defaultSuccessUrl("/hello", true)
                 .failureUrl("/auth/login?error");
