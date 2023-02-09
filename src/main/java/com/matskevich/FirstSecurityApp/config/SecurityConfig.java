@@ -23,7 +23,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     //  config authorization
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http.csrf().disable()   // отключаем защиту от меж сайтовой подделки запросов (будет другой урок)
+                .authorizeRequests()
                 .antMatchers("/auth/login", "/error").permitAll()   // эти страницы доступны без аутентификации
                 .anyRequest().authenticated()   // для всех остальных страниц нужна аутентификация
                 .and()
