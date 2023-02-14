@@ -26,7 +26,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     //  config authorization
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http.csrf().disable()
+                .authorizeRequests()
                 .antMatchers("/auth/login", "/auth/registration", "/error").permitAll()   // эти страницы доступны без аутентификации
                 .anyRequest().hasAnyRole("USER", "ADMIN")
                 .and()

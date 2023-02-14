@@ -48,12 +48,12 @@ public class AuthController {
         personValidator.validate(person, bindingResult);
 
         if (bindingResult.hasErrors())
-            return Map.of("message", "Error");       // лучше создать свой HandlerException
+            return Map.of("message", "Error!");       // лучше создать свой HandlerException
 
         registrationService.register(person);
 
         String token = jwtUtil.generateToken(person.getUsername());
-        return Map.of("jwt_token", token);
+        return Map.of("jwt-token", token);
     }
 
     public Person convertToPerson(PersonDTO personDTO) {
