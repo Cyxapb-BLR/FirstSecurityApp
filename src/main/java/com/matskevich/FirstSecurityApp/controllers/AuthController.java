@@ -1,28 +1,33 @@
 package com.matskevich.FirstSecurityApp.controllers;
 
+import com.matskevich.FirstSecurityApp.dto.PersonDTO;
 import com.matskevich.FirstSecurityApp.models.Person;
+import com.matskevich.FirstSecurityApp.security.JWTUtil;
 import com.matskevich.FirstSecurityApp.services.RegistrationService;
 import com.matskevich.FirstSecurityApp.util.PersonValidator;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/auth")
 public class AuthController {
     private final PersonValidator personValidator;
     private final RegistrationService registrationService;
+    private final JWTUtil jwtUtil;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public AuthController(PersonValidator personValidator, RegistrationService registrationService) {
+    public AuthController(PersonValidator personValidator, RegistrationService registrationService,
+                          JWTUtil jwtUtil, ModelMapper modelMapper) {
         this.personValidator = personValidator;
         this.registrationService = registrationService;
+        this.jwtUtil = jwtUtil;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping("/login")
@@ -36,15 +41,22 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
-    public String performRegistration(@ModelAttribute("person") @Valid Person person,
-                                      BindingResult bindingResult) {
+    public Map<String, String> performRegistration(@RequestBody @Valid PersonDTO personDTO,
+                                                   BindingResult bindingResult) {
+        Person person = convertToPerson(personDTO);
+
         personValidator.validate(person, bindingResult);
 
         if (bindingResult.hasErrors())
-            return "/auth/registration";
+            return Map.of("message", "Error");       // лучше создать свой HandlerException
 
         registrationService.register(person);
 
-        return "redirect:/auth/login";
+        String token = jwtUtil.generateToken(person.getUsername());
+        return Map.of("jwt_token", token);
+    }
+
+    public Person convertToPerson(PersonDTO personDTO) {
+        return this.modelMapper.map(personDTO, Person.class);
     }
 }
